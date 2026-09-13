@@ -31,6 +31,8 @@ qt6-imageformats
 awww
 grim
 slurp
+hyprshot
+satty
 imagemagick
 
 # --------------------------------------------------
@@ -99,6 +101,7 @@ brightnessctl
 nvtop
 btop
 cava
+cmatrix
 fastfetch
 dunst
 network-manager-applet

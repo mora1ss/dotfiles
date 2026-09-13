@@ -33,6 +33,12 @@ hl.window_rule({
 })
 
 hl.window_rule({
+    name = "float-satty",
+    match = { class = "^(com\\.gabm\\.satty|satty)$" },
+    float = true,
+})
+
+hl.window_rule({
     name = "float-pavucontrol",
     match = { class = "^(pavucontrol)$" },
     float = true,

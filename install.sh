@@ -322,6 +322,7 @@ write_user_dirs() {
         "$HOME/Documentos" \
         "$HOME/Música" \
         "$HOME/Pictures/Wallpapers" \
+        "$HOME/Pictures/Screenshots" \
         "$HOME/Vídeos"
 
     mkdir -p "$CONFIG_DIR"
