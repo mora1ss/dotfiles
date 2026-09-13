@@ -29,16 +29,9 @@ qt6-virtualkeyboard
 qt6-multimedia-ffmpeg
 qt6-imageformats
 
-# --------------------------------------------------
-# NVIDIA userspace (kernel module is handled in install.sh)
-# RTX 3060 / Ampere: nvidia-open recommended by NVIDIA
-# --------------------------------------------------
-
-nvidia-utils
-egl-wayland
-libva-nvidia-driver
-libva-utils
-nvidia-settings
+# NVIDIA userspace is installed by install.sh only when an NVIDIA GPU
+# is detected (lspci). Do not list those packages here or VMs get
+# nvidia-smi with no driver.
 
 # --------------------------------------------------
 # Wallpaper / screenshots / recording

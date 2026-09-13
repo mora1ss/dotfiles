@@ -472,6 +472,13 @@ EOF
 
     sudo systemctl enable nvidia-suspend.service nvidia-hibernate.service nvidia-resume.service 2>/dev/null || true
 
+    mkdir -p "$CONFIG_DIR"
+    cat > "$CONFIG_DIR/brave-flags.conf" <<'EOF'
+--enable-features=VaapiVideoDecoder,AcceleratedVideoDecodeLinuxGL,AcceleratedVideoDecodeLinuxZeroCopyGL,VaapiOnNvidiaGPUs,VaapiIgnoreDriverChecks,WaylandLinuxDrmSyncobj
+--ignore-gpu-blocklist
+--ozone-platform=wayland
+EOF
+
     if [[ -r /sys/module/nvidia_drm/parameters/modeset ]]; then
         info "nvidia_drm modeset=$(cat /sys/module/nvidia_drm/parameters/modeset) (Y = DRM enabled)"
     else

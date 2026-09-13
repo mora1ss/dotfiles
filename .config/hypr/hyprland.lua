@@ -31,12 +31,17 @@ hl.env("XCURSOR_SIZE", "14")
 hl.env("QT_QPA_PLATFORM", "wayland")
 hl.env("MOZ_ENABLE_WAYLAND", "1")
 hl.env("GTK_THEME", "Adwaita:dark")
-hl.env("LIBVA_DRIVER_NAME", "nvidia")
-hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
-hl.env("NVD_BACKEND", "direct")
 hl.env("XDG_SESSION_TYPE", "wayland")
 hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
-hl.env("MOZ_DISABLE_RDD_SANDBOX", "1")
+
+local nvidia_dev = io.open("/dev/nvidia0", "r")
+if nvidia_dev ~= nil then
+    nvidia_dev:close()
+    hl.env("LIBVA_DRIVER_NAME", "nvidia")
+    hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+    hl.env("NVD_BACKEND", "direct")
+    hl.env("MOZ_DISABLE_RDD_SANDBOX", "1")
+end
 
 ---- INPUT ----
 
@@ -104,7 +109,6 @@ hl.config({
     misc = {
         disable_hyprland_logo = true,
         disable_splash_rendering = true,
-        vfr = true,
     },
 })
 
