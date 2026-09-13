@@ -9,12 +9,12 @@
     "modules-right": ["custom/mpris-marquee", "pulseaudio", "custom/power"],
 
     "cpu": {
-        "interval": 1,
+        "interval": 2,
         "format": "CPU {usage}%",
     },
 
     "memory": {
-        "interval": 1,
+        "interval": 2,
         "format": "RAM {percentage}%",
         "tooltip-format": "{used} / {total}GiB",
     },
@@ -22,14 +22,14 @@
     "custom/gpu": {
         "exec": "~/.config/waybar/scripts/gpu_usage.sh",
         "format": "GPU {}%",
-        "interval": 1,
+        "interval": 2,
         "tooltip": true,
         "tooltip-format": "GPU: {}%"
     },
     
     "temperature": {
         "critical-threshold": 80,
-        "interval": 1,
+        "interval": 2,
         "format": " {temperatureC}°C",
         "format-critical": " {temperatureC}°C",
         "tooltip": true,

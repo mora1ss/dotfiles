@@ -33,6 +33,12 @@ hl.window_rule({
 })
 
 hl.window_rule({
+    name = "opaque-video",
+    match = { class = "^(brave-browser|Brave-browser|mpv)$" },
+    opacity = "1.0 override",
+})
+
+hl.window_rule({
     name = "float-satty",
     match = { class = "^(com\\.gabm\\.satty|satty)$" },
     float = true,

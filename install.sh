@@ -18,6 +18,7 @@ set -uo pipefail
 #   5. Installs this repository's configuration
 #   6. Installs SDDM + SilentSDDM (configs/rei.conf, blue-light)
 #   7. Enables SDDM on graphical.target so Hyprland starts after reboot
+#   8. Configures NVIDIA DRM / VA-API when an NVIDIA GPU is detected
 #
 # Supported package managers:
 #   - pacman       (official repos: Arch, Manjaro, EndeavourOS, CachyOS, etc.)
@@ -387,6 +388,100 @@ if [[ -f "$CONFIG_DIR/wlogout/launch.sh" ]]; then
 fi
 
 success "Permissions configured."
+
+# --------------------------------------------------
+# NVIDIA (RTX 30xx / Ampere — DRM, VA-API, suspend)
+# --------------------------------------------------
+
+has_nvidia_gpu() {
+    lspci 2>/dev/null | grep -qiE 'VGA compatible controller.*NVIDIA|3D controller.*NVIDIA|NVIDIA Corporation.*(VGA|3D)'
+}
+
+nvidia_kernel_pkg_installed() {
+    pacman -Qq 2>/dev/null | grep -qE '^(nvidia|nvidia-lts|nvidia-dkms|nvidia-open|nvidia-open-dkms|linux-cachyos-nvidia|linux-cachyos-nvidia-open)(-open)?$'
+}
+
+install_nvidia_stack() {
+    if ! has_nvidia_gpu; then
+        info "No NVIDIA GPU detected; skipping NVIDIA DRM/VA-API setup."
+        return 0
+    fi
+
+    info "NVIDIA GPU detected. Configuring DRM, VA-API and suspend..."
+
+    local nvidia_pkgs=(nvidia-utils egl-wayland libva-nvidia-driver libva-utils nvidia-settings)
+    sudo pacman -S --needed --noconfirm "${nvidia_pkgs[@]}" || \
+        warning "Failed to install one or more NVIDIA userspace packages."
+
+    if pacman -Slq multilib 2>/dev/null | grep -qx lib32-nvidia-utils; then
+        sudo pacman -S --needed --noconfirm lib32-nvidia-utils || true
+    fi
+
+    if ! nvidia_kernel_pkg_installed; then
+        local headers=""
+        if pacman -Q linux-cachyos >/dev/null 2>&1; then
+            headers="linux-cachyos-headers"
+        elif pacman -Q linux-zen >/dev/null 2>&1; then
+            headers="linux-zen-headers"
+        elif pacman -Q linux-lts >/dev/null 2>&1; then
+            headers="linux-lts-headers"
+        elif pacman -Q linux >/dev/null 2>&1; then
+            headers="linux-headers"
+        fi
+
+        if [[ -n "$headers" ]]; then
+            sudo pacman -S --needed --noconfirm "$headers" || true
+        fi
+
+        if pacman -Si nvidia-open-dkms >/dev/null 2>&1; then
+            info "Installing nvidia-open-dkms (recommended for RTX 3060 / Ampere)..."
+            sudo pacman -S --needed --noconfirm nvidia-open-dkms || \
+                warning "Failed to install nvidia-open-dkms. Install the matching NVIDIA kernel module for your kernel."
+        fi
+    else
+        info "NVIDIA kernel module already installed; leaving it unchanged."
+    fi
+
+    sudo tee /etc/modprobe.d/nvidia-hyprland.conf >/dev/null <<'EOF'
+options nvidia_drm modeset=1
+options nvidia NVreg_PreserveVideoMemoryAllocations=1
+EOF
+
+    if [[ -f /etc/mkinitcpio.conf ]] && ! grep -q 'nvidia_drm' /etc/mkinitcpio.conf; then
+        sudo sed -i 's/^MODULES=(/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm /' /etc/mkinitcpio.conf
+        if command -v mkinitcpio >/dev/null 2>&1; then
+            info "Rebuilding initramfs for early NVIDIA KMS..."
+            sudo mkinitcpio -P || warning "mkinitcpio -P failed; rebuild it manually after reboot if DRM is N."
+        fi
+    fi
+
+    if [[ -d /boot/loader/entries ]]; then
+        local entry
+        for entry in /boot/loader/entries/*.conf; do
+            [[ -f "$entry" ]] || continue
+            if ! grep -q 'nvidia-drm.modeset' "$entry"; then
+                sudo sed -i '/^options / s/$/ nvidia-drm.modeset=1 nvidia.NVreg_PreserveVideoMemoryAllocations=1/' "$entry"
+            fi
+        done
+    elif [[ -f /etc/default/grub ]] && ! grep -q 'nvidia-drm.modeset' /etc/default/grub; then
+        sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT="/GRUB_CMDLINE_LINUX_DEFAULT="nvidia-drm.modeset=1 nvidia.NVreg_PreserveVideoMemoryAllocations=1 /' /etc/default/grub
+        if command -v grub-mkconfig >/dev/null 2>&1; then
+            sudo grub-mkconfig -o /boot/grub/grub.cfg || true
+        fi
+    fi
+
+    sudo systemctl enable nvidia-suspend.service nvidia-hibernate.service nvidia-resume.service 2>/dev/null || true
+
+    if [[ -r /sys/module/nvidia_drm/parameters/modeset ]]; then
+        info "nvidia_drm modeset=$(cat /sys/module/nvidia_drm/parameters/modeset) (Y = DRM enabled)"
+    else
+        warning "nvidia_drm is not loaded yet. After reboot, 'cat /sys/module/nvidia_drm/parameters/modeset' should print Y."
+    fi
+
+    success "NVIDIA DRM / VA-API configured. Reboot for KMS to take effect."
+}
+
+install_nvidia_stack
 
 # --------------------------------------------------
 # SDDM + SilentSDDM (rei / blue-light)

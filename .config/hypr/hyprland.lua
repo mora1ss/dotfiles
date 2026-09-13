@@ -22,6 +22,7 @@ hl.on("hyprland.start", function()
 
     hl.exec_cmd("awww-daemon")
     hl.exec_cmd("qs -d -c volume-osd")
+    hl.exec_cmd("hypridle")
 end)
 
 ---- ENVIRONMENT VARIABLES ----
@@ -30,6 +31,12 @@ hl.env("XCURSOR_SIZE", "14")
 hl.env("QT_QPA_PLATFORM", "wayland")
 hl.env("MOZ_ENABLE_WAYLAND", "1")
 hl.env("GTK_THEME", "Adwaita:dark")
+hl.env("LIBVA_DRIVER_NAME", "nvidia")
+hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+hl.env("NVD_BACKEND", "direct")
+hl.env("XDG_SESSION_TYPE", "wayland")
+hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")
+hl.env("MOZ_DISABLE_RDD_SANDBOX", "1")
 
 ---- INPUT ----
 
@@ -97,6 +104,7 @@ hl.config({
     misc = {
         disable_hyprland_logo = true,
         disable_splash_rendering = true,
+        vfr = true,
     },
 })
 

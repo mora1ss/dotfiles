@@ -1,9 +1,8 @@
 # 43PR/dotfiles
 # Arch Linux packages required for the Hyprland setup
 #
-# Note: some of these (currently: wlogout) live only in the AUR,
-# not in the official repos. install.sh detects this automatically
-# and installs them with paru/yay if one is available.
+# Note: some of these live only in the AUR. install.sh detects this
+# automatically and installs them with paru/yay if one is available.
 
 # --------------------------------------------------
 # Hyprland / desktop
@@ -13,19 +12,36 @@ hyprland
 waybar
 rofi
 hyprlock
+hypridle
 wlogout
 quickshell
 jq
+xdg-desktop-portal
 xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+xdg-utils
 xorg-xwayland
 sddm
+qt5-wayland
+qt6-wayland
 qt6-svg
 qt6-virtualkeyboard
 qt6-multimedia-ffmpeg
 qt6-imageformats
 
 # --------------------------------------------------
-# Wallpaper / screenshots
+# NVIDIA userspace (kernel module is handled in install.sh)
+# RTX 3060 / Ampere: nvidia-open recommended by NVIDIA
+# --------------------------------------------------
+
+nvidia-utils
+egl-wayland
+libva-nvidia-driver
+libva-utils
+nvidia-settings
+
+# --------------------------------------------------
+# Wallpaper / screenshots / recording
 # --------------------------------------------------
 
 awww
@@ -34,6 +50,7 @@ slurp
 hyprshot
 satty
 imagemagick
+gpu-screen-recorder
 
 # --------------------------------------------------
 # Clipboard
@@ -48,6 +65,7 @@ wl-clipboard
 
 pipewire
 pipewire-pulse
+pipewire-alsa
 wireplumber
 playerctl
 pavucontrol
@@ -58,10 +76,16 @@ pavucontrol
 
 kitty
 thunar
+thunar-archive-plugin
 xed
+ark
+p7zip
+unrar
+brave
+blueman
 
 # --------------------------------------------------
-# File manager / thumbnails / icons / GTK
+# File manager / thumbnails / icons / GTK / removable media
 # --------------------------------------------------
 
 tumbler
@@ -70,6 +94,9 @@ papirus-icon-theme
 papirus-folders
 nwg-look
 xdg-user-dirs
+gvfs
+gvfs-mtp
+gvfs-gphoto2
 
 # --------------------------------------------------
 # Media
@@ -89,6 +116,9 @@ hyprmod
 
 ttf-jetbrains-mono-nerd
 ttf-font-awesome
+noto-fonts
+noto-fonts-emoji
+ttf-liberation
 
 # --------------------------------------------------
 # Utilities
@@ -96,6 +126,7 @@ ttf-font-awesome
 
 curl
 unzip
+zip
 gammastep
 brightnessctl
 nvtop
@@ -111,4 +142,3 @@ zsh-autosuggestions
 zsh-syntax-highlighting
 starship
 eza
-
