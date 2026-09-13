@@ -304,6 +304,50 @@ if [[ -d "$REPO_DIR/Wallpapers" ]]; then
 fi
 
 # --------------------------------------------------
+# Default user directories
+# --------------------------------------------------
+
+info "Creating default user directories..."
+
+if ! command -v xdg-user-dirs-update >/dev/null 2>&1; then
+    sudo pacman -S --needed --noconfirm xdg-user-dirs >/dev/null 2>&1 || true
+fi
+
+write_user_dirs() {
+    mkdir -p \
+        "$HOME/Ambiente de trabalho" \
+        "$HOME/Transferências" \
+        "$HOME/Modelos" \
+        "$HOME/Público" \
+        "$HOME/Documentos" \
+        "$HOME/Música" \
+        "$HOME/Pictures/Wallpapers" \
+        "$HOME/Vídeos"
+
+    mkdir -p "$CONFIG_DIR"
+    cat > "$CONFIG_DIR/user-dirs.dirs" <<'EOF'
+XDG_DESKTOP_DIR="$HOME/Ambiente de trabalho"
+XDG_DOWNLOAD_DIR="$HOME/Transferências"
+XDG_TEMPLATES_DIR="$HOME/Modelos"
+XDG_PUBLICSHARE_DIR="$HOME/Público"
+XDG_DOCUMENTS_DIR="$HOME/Documentos"
+XDG_MUSIC_DIR="$HOME/Música"
+XDG_PICTURES_DIR="$HOME/Pictures"
+XDG_VIDEOS_DIR="$HOME/Vídeos"
+EOF
+    printf 'pt_PT\n' > "$CONFIG_DIR/user-dirs.locale"
+}
+
+write_user_dirs
+
+if command -v xdg-user-dirs-update >/dev/null 2>&1; then
+    xdg-user-dirs-update
+    write_user_dirs
+fi
+
+success "Default folders ready (Documentos, Transferências, Vídeos, …)."
+
+# --------------------------------------------------
 # Enable user audio services
 # --------------------------------------------------
 

@@ -19,6 +19,19 @@ hl.window_rule({
     opacity = "1.0 override",
 })
 
+-- HyprMod is GTK4/libadwaita: keep it fully opaque so labels stay readable
+hl.window_rule({
+    name = "hyprmod-opaque",
+    match = { class = "^(.*[Hh]ypr[Mm]od.*)$" },
+    opacity = "1.0 override",
+})
+
+hl.window_rule({
+    name = "hyprmod-opaque-title",
+    match = { title = "^(HyprMod)$" },
+    opacity = "1.0 override",
+})
+
 hl.window_rule({
     name = "float-pavucontrol",
     match = { class = "^(pavucontrol)$" },

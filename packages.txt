@@ -67,6 +67,7 @@ ffmpegthumbnailer
 papirus-icon-theme
 papirus-folders
 nwg-look
+xdg-user-dirs
 
 # --------------------------------------------------
 # Media
