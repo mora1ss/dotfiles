@@ -1,0 +1,76 @@
+{
+    "layer": "top",
+    "position": "top",
+    "exclusive": true, // "false" 
+    "spacing": 0,
+
+    "modules-left": ["cpu", "custom/gpu", "memory", "temperature"],
+    "modules-center": ["clock"],
+    "modules-right": ["custom/mpris-marquee", "pulseaudio", "custom/power"],
+
+    "cpu": {
+        "interval": 1,
+        "format": "CPU {usage}%",
+    },
+
+    "memory": {
+        "interval": 1,
+        "format": "RAM {percentage}%",
+        "tooltip-format": "{used} / {total}GiB",
+    },
+
+    "custom/gpu": {
+        "exec": "~/.config/waybar/scripts/gpu_usage.sh",
+        "format": "GPU {}%",
+        "interval": 1,
+        "tooltip": true,
+        "tooltip-format": "GPU: {}%"
+    },
+    
+    "temperature": {
+        "critical-threshold": 80,
+        "interval": 1,
+        "format": " {temperatureC}°C",
+        "format-critical": " {temperatureC}°C",
+        "tooltip": true,
+        "tooltip-format": "CPU Temp: {temperatureC}°C",
+        "on-click": "~/.config/waybar/scripts/toggle-gammastep"
+    },
+//  "format": "{:%H:%M}",
+    "clock": {
+        "format": "{:%H:%M}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>",
+        "calendar": {
+            "mode": "month",
+            "format": {
+                "today": "<b><u>{}</u></b>"
+            }
+        }
+    },
+
+    "custom/mpris-marquee": {
+        "exec": "~/.config/waybar/scripts/mpris-marquee.sh",
+        "return-type": "json",
+        "format": "{}",
+        "on-click": "playerctl play-pause",
+        "on-scroll-up": "playerctl next",
+        "on-scroll-down": "playerctl previous"
+    },
+
+    "pulseaudio": {
+        "format": "{icon}  {volume}%",
+        "format-muted": "Muted",
+        "format-icons": {
+            "default": ["", "", ""]
+        },
+        "tooltip": false,
+        "on-click": "pavucontrol",
+        "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+    },
+
+    "custom/power": {
+        "format": "⏻",
+        "tooltip": false,
+        "on-click": "~/.config/wlogout/launch.sh"
+    }
+}

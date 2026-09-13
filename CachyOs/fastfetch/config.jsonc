@@ -1,0 +1,25 @@
+{
+  "logo": {
+    "type": "auto",
+    "source": "$HOME/.config/fastfetch/pfp.png",
+    "width": 35
+  },
+  "modules": [
+    "title",
+    "separator",
+    "os",
+    "host",
+    "kernel",
+    "uptime",
+    //"packages",
+    "shell",
+    "display",
+    "de",
+    "wm",
+    "terminal",
+    "cpu",
+    "memory",
+    "disk",
+    "battery"
+  ]
+}
