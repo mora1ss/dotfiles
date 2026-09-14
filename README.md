@@ -1,7 +1,5 @@
 ## Simple Hyprland Setup
 
-Showcase & Guides: https://www.youtube.com/@43PR2
-
 Hyprland setup focused on practical keybinds, productivity, and a smooth workflow easy to customize
 
 Feel free to use as inspiration or as a starting point for building your own setup.
@@ -21,8 +19,6 @@ terminal     → fastfetch + autosuggestions + syntax-highlighting
 ![](Wallpapers/Showcase/2.png)
 
 
-Wallpapers: https://wallhaven.cc/user/43pr
-
 ## Features
 
 * Waybar > Change volume with mouse wheel, mute, play/pause, next and blue light filter
@@ -36,7 +32,7 @@ Wallpapers: https://wallhaven.cc/user/43pr
 
 ### Wallpaper Selector
 
-Just made some tweaks to it. Give it some love 
+Just made some tweaks to it.
 
 > Inspired by [hyprquickpaper](https://github.com/iamsurjog/hyprquickpaper)
 
@@ -82,7 +78,7 @@ sudo pacman -S git
 ```
 ```bash
 
-git clone https://github.com/43PR/dotfiles.git
+git clone https://github.com/mora1ss/dotfiles.git
 cd dotfiles
 chmod +x install.sh
 ./install.sh
@@ -96,11 +92,6 @@ Edit default programs in "config/hypr/hyprland.lua".
 
 Any issues with the wallpaper picker just delete cache pictures ".cache/quickshell/thumbs/"
 
-**☕ Support: https://ko-fi.com/43pr2**
 
----
-
-* [hyprquickpaper](https://github.com/iamsurjog/hyprquickpaper)
-* [samaritan-sddm-theme](https://github.com/omerwk/samaritan-sddm-theme)
 
 
