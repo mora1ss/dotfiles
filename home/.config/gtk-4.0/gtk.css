@@ -1,1 +1,16 @@
-/usr/share/themes/adw-gtk3-dark/gtk-4.0/gtk.css
+/* User CSS for GTK4 / libadwaita. The theme itself comes from settings.ini
+ * (adw-gtk3-dark). This file is loaded on top of it.
+ * Colours come from colors.css (rewritten by `theme`). */
+@import url("colors.css");
+
+window,
+dialog,
+.popover,
+menu,
+entry,
+textview,
+button:not(.circular):not(.pill),
+notebook > header > tabs > tab,
+headerbar {
+    border-radius: 4px;
+}
