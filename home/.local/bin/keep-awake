@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Toggle a systemd idle inhibitor so hypridle will not lock, blank or suspend.
+# Manual lock (SUPER+Escape) and the power menu still work.
+#   keep-awake status   JSON for waybar
+#   keep-awake toggle   flip the inhibitor
+set -euo pipefail
+
+pidfile="${XDG_STATE_HOME:-$HOME/.local/state}/theme/keep-awake.pid"
+mkdir -p "$(dirname "$pidfile")"
+
+alive() {
+    [[ -f $pidfile ]] || return 1
+    local pid
+    pid=$(<"$pidfile")
+    [[ $pid =~ ^[0-9]+$ ]] || return 1
+    kill -0 "$pid" 2>/dev/null
+}
+
+emit() {
+    if alive; then
+        printf '%s\n' '{"text":"","alt":"on","class":"on","tooltip":"Keep awake: on"}'
+    else
+        rm -f "$pidfile"
+        printf '%s\n' '{"text":"","alt":"off","class":"off","tooltip":"Keep awake: off"}'
+    fi
+}
+
+toggle() {
+    if alive; then
+        kill "$(<"$pidfile")" 2>/dev/null || true
+        rm -f "$pidfile"
+        return 0
+    fi
+    # --what=idle is what hypridle watches (ignore_systemd_inhibit defaults to false).
+    # Manual suspend/poweroff are not blocked.
+    systemd-inhibit --what=idle --who=keep-awake --why="Keep awake" --mode=block sleep infinity &
+    echo $! >"$pidfile"
+    disown
+}
+
+case "${1:-status}" in
+    status) emit ;;
+    toggle) toggle; emit ;;
+    *) echo "usage: keep-awake status|toggle" >&2; exit 2 ;;
+esac

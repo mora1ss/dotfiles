@@ -1,0 +1,375 @@
+#!/usr/bin/env bash
+# theme - switch colour themes and wallpapers.
+#
+#   theme [menu]          rofi menu: Matugen / Rosé Pine / Gruvbox
+#   theme set <id>        apply a theme with its last wallpaper
+#   theme wall            pick a wallpaper from the current theme's folder
+#   theme random          random wallpaper from the current theme's folder
+#   theme next | prev     cycle wallpapers in the current theme's folder
+#   theme restore         re-apply the saved state (run at login)
+#   theme status          print the current theme and wallpaper
+#
+# Only colour files change. Each theme provides files mirroring ~/.config:
+#   static:  ~/.config/theme/themes/<id>/<path>
+#   matugen: ~/.config/theme/generated/matugen/<path>  (rendered from templates/)
+# and they are copied to ~/.config/<path>. App configs include those files.
+#
+# State: ~/.local/state/theme/current   Log: ~/.local/state/theme/theme.log
+
+set -Eeuo pipefail
+
+CONF_DIR="$HOME/.config/theme"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/theme"
+STATE_FILE="$STATE_DIR/current"
+LOG_FILE="$STATE_DIR/theme.log"
+THUMB_DIR="$STATE_DIR/thumbs"
+MATUGEN_CONFIG="$HOME/.config/matugen/config.toml"
+MATUGEN_OUT="$CONF_DIR/generated/matugen"
+
+mkdir -p "$STATE_DIR" "$THUMB_DIR"
+
+# shellcheck source=/dev/null
+source "$CONF_DIR/theme.conf"
+
+declare -A STATE=()
+CHANGED=0
+
+# --- helpers -----------------------------------------------------------------
+
+log() {
+    printf '%s %s\n' "$(date '+%F %T')" "$*" >>"$LOG_FILE"
+}
+
+die() {
+    log "error: $*"
+    printf 'theme: %s\n' "$*" >&2
+    notify-send -u critical -a theme "theme" "$*" 2>/dev/null || true
+    exit 1
+}
+
+trap 'die "unexpected failure at line $LINENO (see $LOG_FILE)"' ERR
+
+# Non-blocking: a second invocation while one is applying just exits.
+take_lock() {
+    exec 9>"$STATE_DIR/lock"
+    if ! flock -n 9; then
+        log "busy, skipped: $*"
+        exit 0
+    fi
+}
+
+is_theme() {
+    [[ -n ${1:-} && -n ${THEME_LABEL[$1]+x} ]]
+}
+
+load_state() {
+    [[ -f $STATE_FILE ]] || return 0
+    local key value
+    while IFS='=' read -r key value; do
+        if [[ -n $key && $key != \#* ]]; then
+            STATE[$key]=$value
+        fi
+    done <"$STATE_FILE"
+}
+
+save_state() {
+    local tmp key
+    tmp=$(mktemp "$STATE_FILE.XXXXXX")
+    for key in "${!STATE[@]}"; do
+        printf '%s=%s\n' "$key" "${STATE[$key]}"
+    done | sort >"$tmp"
+    mv -f "$tmp" "$STATE_FILE"
+}
+
+current_theme() {
+    local id=${STATE[theme]:-$DEFAULT_THEME}
+    if ! is_theme "$id"; then
+        id=$DEFAULT_THEME
+    fi
+    printf '%s' "$id"
+}
+
+# Image files in a theme's wallpaper folder, sorted, one per line.
+list_walls() {
+    local dir=${THEME_WALLDIR[$1]}
+    [[ -d $dir ]] || return 0
+    find "$dir" -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' \
+        -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.gif' \) | sort
+}
+
+# Last wallpaper used with a theme, or the first one in its folder.
+pick_wall() {
+    local saved=${STATE[wall.$1]:-}
+    if [[ -n $saved && -f $saved ]]; then
+        printf '%s' "$saved"
+        return 0
+    fi
+    local first
+    first=$(list_walls "$1" | head -n 1)
+    [[ -n $first ]] || return 1
+    printf '%s' "$first"
+}
+
+thumb_for() {
+    local file=$1 key thumb
+    key=$(printf '%s:%s' "$file" "$(stat -c %Y "$file")" | md5sum | cut -d' ' -f1)
+    thumb="$THUMB_DIR/$key.png"
+    if [[ ! -f $thumb ]]; then
+        magick "${file}[0]" -thumbnail '240x135^' -gravity center -extent 240x135 "$thumb" \
+            2>>"$LOG_FILE" || true
+    fi
+    printf '%s' "$thumb"
+}
+
+# --- applying ------------------------------------------------------------------
+
+# Copy every file under $1 to the same relative path in ~/.config.
+# Unchanged files are skipped; sets CHANGED=1 if anything was written.
+install_tree() {
+    local src=$1 rel dest tmp
+    [[ -d $src ]] || die "missing colour files: $src"
+    while IFS= read -r -d '' rel; do
+        dest="$HOME/.config/$rel"
+        if cmp -s "$src/$rel" "$dest"; then
+            continue
+        fi
+        mkdir -p "$(dirname "$dest")"
+        tmp=$(mktemp "$dest.XXXXXX")
+        cat "$src/$rel" >"$tmp"
+        chmod 644 "$tmp"
+        mv -f "$tmp" "$dest"
+        CHANGED=1
+        log "updated $rel"
+    done < <(find "$src" -type f -printf '%P\0')
+}
+
+run_matugen() {
+    log "matugen: $1"
+    if ! matugen image "$1" -c "$MATUGEN_CONFIG" "${MATUGEN_ARGS[@]}" >>"$LOG_FILE" 2>&1; then
+        die "matugen failed for $(basename "$1")"
+    fi
+    STATE[matugen.source]=$1
+}
+
+ensure_awww() {
+    local i
+    for i in {1..30}; do
+        awww query >/dev/null 2>&1 && return 0
+        sleep 0.1
+    done
+    log "starting awww-daemon"
+    setsid -f awww-daemon >/dev/null 2>&1
+    for i in {1..30}; do
+        awww query >/dev/null 2>&1 && return 0
+        sleep 0.1
+    done
+    die "awww-daemon is not running"
+}
+
+set_wallpaper() {
+    # At login the daemon socket exists before any output does. awww img then
+    # fails with "none of the requested outputs are valid" even though the
+    # daemon later restores the cached image on its own.
+    ensure_awww
+    local i err
+    for i in {1..40}; do
+        if err=$(awww img "$1" "${AWWW_ARGS[@]}" 2>&1); then
+            return 0
+        fi
+        printf '%s\n' "$err" >>"$LOG_FILE"
+        if [[ $err != *"none of the requested outputs are valid"* ]]; then
+            die "awww could not set $(basename "$1")"
+        fi
+        sleep 0.25
+    done
+    die "awww could not set $(basename "$1")"
+}
+
+# rofi and hyprlock read their colours at launch, so they need nothing here.
+reload_apps() {
+    hyprctl reload >/dev/null 2>&1 || true
+    pkill -SIGUSR2 -x waybar || true
+    swaync-client -rs >/dev/null 2>&1 || true
+    pkill -SIGUSR1 -x kitty || true
+    pkill -SIGUSR2 -x cava || true
+    log "reloaded apps"
+}
+
+# apply <id> <wallpaper> <regen>
+#   regen=yes   always run matugen (explicit theme switch)
+#   regen=auto  run matugen only if the wallpaper differs from the last run
+apply() {
+    local id=$1 wall=$2 regen=$3
+    CHANGED=0
+
+    set_wallpaper "$wall"
+
+    if [[ $id == matugen ]]; then
+        if [[ $regen == yes || ${STATE[matugen.source]:-} != "$wall" || ! -d $MATUGEN_OUT ]]; then
+            run_matugen "$wall"
+        fi
+        install_tree "$MATUGEN_OUT"
+    else
+        install_tree "$CONF_DIR/themes/$id"
+    fi
+
+    STATE[theme]=$id
+    STATE[wall.$id]=$wall
+    save_state
+    set_editor_theme "$id"
+
+    if (( CHANGED )); then
+        reload_apps
+    fi
+    log "applied $id: $wall"
+}
+
+# Only workbench.colorTheme is touched. Other keys in settings.json are kept.
+# The file must be JSON (no comments); jq cannot read JSONC.
+set_editor_theme() {
+    local id=$1 settings name tmp
+    settings="$HOME/.config/VSCodium/User/settings.json"
+    case $id in
+        matugen)   name="Matugen" ;;
+        rose-pine) name="Rosé Pine" ;;
+        gruvbox)   name="Gruvbox Dark Medium" ;;
+        *)         return 0 ;;
+    esac
+    mkdir -p "$(dirname "$settings")"
+    [[ -f $settings ]] || printf '%s\n' '{}' >"$settings"
+    tmp=$(mktemp)
+    if jq --arg t "$name" '.["workbench.colorTheme"] = $t' "$settings" >"$tmp"; then
+        mv -f "$tmp" "$settings"
+        log "vscodium theme: $name"
+    else
+        rm -f "$tmp"
+        log "vscodium settings.json was not updated (not plain JSON)"
+    fi
+}
+
+# --- commands ------------------------------------------------------------------
+
+cmd_set() {
+    local id=${1:-} wall
+    is_theme "$id" || die "unknown theme '${id}' (expected: ${THEME_IDS[*]})"
+    take_lock set "$id"
+    load_state
+    wall=$(pick_wall "$id") || die "no wallpapers in ${THEME_WALLDIR[$id]}"
+    apply "$id" "$wall" yes
+}
+
+cmd_menu() {
+    load_state
+    local cur id choice i=0 active=0
+    cur=$(current_theme)
+    for id in "${THEME_IDS[@]}"; do
+        if [[ $id == "$cur" ]]; then
+            active=$i
+        fi
+        i=$((i + 1))
+    done
+
+    choice=$(for id in "${THEME_IDS[@]}"; do printf '%s\n' "${THEME_LABEL[$id]}"; done \
+        | rofi -dmenu -i -no-custom -p theme -format i -a "$active" -selected-row "$active") \
+        || exit 0
+    [[ -n $choice ]] || exit 0
+
+    cmd_set "${THEME_IDS[$choice]}"
+}
+
+cmd_wall() {
+    load_state
+    local id walls=() choice i active=0
+    id=$(current_theme)
+    mapfile -t walls < <(list_walls "$id")
+    (( ${#walls[@]} > 0 )) || die "no wallpapers in ${THEME_WALLDIR[$id]}"
+
+    for i in "${!walls[@]}"; do
+        if [[ ${walls[$i]} == "${STATE[wall.$id]:-}" ]]; then
+            active=$i
+        fi
+    done
+
+    choice=$(for i in "${!walls[@]}"; do
+            printf '%s\0icon\x1f%s\n' "$(basename "${walls[$i]}")" "$(thumb_for "${walls[$i]}")"
+        done | rofi -dmenu -i -no-custom -show-icons -p "${THEME_LABEL[$id]}" -format i \
+            -a "$active" -selected-row "$active" \
+            -theme-str 'window { width: 640px; } listview { lines: 5; } element-icon { size: 96px; }') \
+        || exit 0
+    [[ -n $choice ]] || exit 0
+
+    take_lock wall
+    load_state
+    apply "$id" "${walls[$choice]}" auto
+}
+
+# cmd_cycle next|prev|random
+cmd_cycle() {
+    take_lock "$1"
+    load_state
+    local id walls=() n i idx=-1 next
+    id=$(current_theme)
+    mapfile -t walls < <(list_walls "$id")
+    n=${#walls[@]}
+    (( n > 0 )) || die "no wallpapers in ${THEME_WALLDIR[$id]}"
+
+    for i in "${!walls[@]}"; do
+        if [[ ${walls[$i]} == "${STATE[wall.$id]:-}" ]]; then
+            idx=$i
+        fi
+    done
+
+    case $1 in
+        next)
+            next=$(( (idx + 1) % n )) ;;
+        prev)
+            if (( idx < 0 )); then next=$(( n - 1 )); else next=$(( (idx - 1 + n) % n )); fi ;;
+        random)
+            next=$(( RANDOM % n ))
+            if (( n > 1 )); then
+                while (( next == idx )); do next=$(( RANDOM % n )); done
+            fi ;;
+    esac
+
+    apply "$id" "${walls[$next]}" auto
+}
+
+cmd_restore() {
+    take_lock restore
+    load_state
+    local id wall
+    id=$(current_theme)
+    wall=$(pick_wall "$id") || die "no wallpapers in ${THEME_WALLDIR[$id]}"
+    apply "$id" "$wall" auto
+}
+
+cmd_status() {
+    load_state
+    local id
+    id=$(current_theme)
+    printf 'theme:     %s (%s)\n' "${THEME_LABEL[$id]}" "$id"
+    printf 'wallpaper: %s\n' "${STATE[wall.$id]:-none}"
+}
+
+usage() {
+    sed -n '2,11s/^# \{0,1\}//p' "$0"
+}
+
+# --- main ----------------------------------------------------------------------
+
+cmd=${1:-menu}
+case $cmd in
+    status|help|-h|--help) ;;
+    *) exec 2>>"$LOG_FILE" ;;
+esac
+
+case $cmd in
+    menu)             cmd_menu ;;
+    set)              cmd_set "${2:-}" ;;
+    wall)             cmd_wall ;;
+    random|next|prev) cmd_cycle "$cmd" ;;
+    restore)          cmd_restore ;;
+    status)           cmd_status ;;
+    help|-h|--help)   usage ;;
+    *)                usage >&2; exit 2 ;;
+esac

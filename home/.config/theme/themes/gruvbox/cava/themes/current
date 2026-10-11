@@ -1,0 +1,6 @@
+# Generated colour file (theme: gruvbox). Replaced by `theme`.
+[color]
+gradient = 1
+gradient_count = 2
+gradient_color_1 = '#fe8019'
+gradient_color_2 = '#ebdbb2'

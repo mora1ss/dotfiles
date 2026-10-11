@@ -1,0 +1,144 @@
+/* SwayNC style. swaync loads /etc/xdg/swaync/style.css before this file,
+ * so this only overrides colours, corners and sizes.
+ * Fallback colours first, then colors.css (rewritten by `theme`), whose
+ * definitions win when present. */
+@define-color background #191724;
+@define-color surface #1f1d2e;
+@define-color surface_container #26233a;
+@define-color on_surface #e0def4;
+@define-color on_surface_variant #908caa;
+@define-color outline #403d52;
+@define-color primary #c4a7e7;
+@define-color on_primary #191724;
+@define-color error #eb6f92;
+
+@import "colors.css";
+
+:root {
+    --border-radius: 4px;
+    --font-size-body: 13px;
+    --font-size-summary: 13px;
+    --notification-icon-size: 40px;
+    --notification-shadow: none;
+}
+
+* {
+    font-family: "JetBrainsMono Nerd Font";
+}
+
+/* Popup and list notifications */
+.notification-row:focus,
+.notification-group:focus {
+    background: transparent;
+}
+
+.notification-row .notification-background .notification {
+    background: @background;
+    border: 1px solid @outline;
+    border-radius: 4px;
+}
+
+.notification-row .notification-background .notification.critical {
+    border-color: @error;
+}
+
+.notification-row .notification-background .notification .notification-default-action:hover {
+    background: @surface;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .image {
+    border-radius: 4px;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .text-box .summary {
+    color: @on_surface;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .text-box .time {
+    color: @on_surface_variant;
+    font-size: 11px;
+    font-weight: normal;
+}
+
+.notification-row .notification-background .notification .notification-default-action .notification-content .text-box .body {
+    color: @on_surface_variant;
+}
+
+.notification-row .notification-background .notification .notification-action > button {
+    background: @surface_container;
+    color: @on_surface;
+    border-radius: 4px;
+}
+
+.notification-row .notification-background .notification .notification-action > button:hover {
+    background: @outline;
+}
+
+.close-button {
+    background: @surface_container;
+    color: @on_surface;
+    border-radius: 4px;
+    min-width: 20px;
+    min-height: 20px;
+}
+
+.close-button:hover {
+    background: @outline;
+}
+
+.notification-group.collapsed .notification-row .notification {
+    background-color: @background;
+}
+
+.notification-group.collapsed:hover .notification-row:not(:only-child) .notification {
+    background-color: @surface;
+}
+
+/* Control center (SUPER + N): title, DND toggle, list */
+.control-center {
+    background: @background;
+    color: @on_surface;
+    border: 1px solid @outline;
+    border-radius: 4px;
+}
+
+.control-center .control-center-list .notification .notification-default-action:hover,
+.control-center .control-center-list .notification .notification-action:hover {
+    background-color: @surface;
+}
+
+.widget-title > label {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.widget-title > button {
+    background: @surface_container;
+    color: @on_surface;
+    border: 1px solid @outline;
+    border-radius: 4px;
+    padding: 2px 10px;
+}
+
+.widget-title > button:hover {
+    background: @outline;
+}
+
+.widget-dnd label {
+    color: @on_surface;
+    font-size: 13px;
+}
+
+.widget-dnd switch {
+    background: @surface_container;
+    border-radius: 4px;
+}
+
+.widget-dnd switch:checked {
+    background: @primary;
+}
+
+.widget-dnd switch slider {
+    background: @on_surface;
+    border-radius: 4px;
+}

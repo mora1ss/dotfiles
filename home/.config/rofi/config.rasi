@@ -1,0 +1,19 @@
+/* rofi 2.x configuration. Options: rofi -dump-config */
+configuration {
+    modi:                "drun,window";
+    terminal:            "kitty";
+    font:                "JetBrainsMono Nerd Font 11";
+
+    show-icons:          true;
+    icon-theme:          "Papirus-Dark-Black";
+    drun-display-format: "{name}";
+    window-format:       "{c}  {t}";
+
+    display-drun:        "apps";
+    display-window:      "windows";
+
+    case-sensitive:      false;
+    cycle:               true;
+}
+
+@theme "~/.config/rofi/theme.rasi"

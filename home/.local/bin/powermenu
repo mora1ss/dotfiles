@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Rofi power menu. Destructive actions ask for confirmation.
+set -euo pipefail
+
+choice=$(printf '%s\n' Lock Logout Suspend Reboot Shutdown \
+    | rofi -dmenu -i -p power -no-custom) || exit 0
+
+confirm() {
+    [[ $(printf 'No\nYes\n' | rofi -dmenu -p "$1?" -no-custom) == Yes ]]
+}
+
+logout_cmd() {
+    if command -v hyprshutdown >/dev/null; then
+        hyprshutdown
+    else
+        hyprctl dispatch 'hl.dsp.exit()'
+    fi
+}
+
+case "$choice" in
+    Lock)     loginctl lock-session ;;
+    Logout)   confirm Logout   && logout_cmd ;;
+    Suspend)  systemctl suspend ;;
+    Reboot)   confirm Reboot   && systemctl reboot ;;
+    Shutdown) confirm Shutdown && systemctl poweroff ;;
+esac

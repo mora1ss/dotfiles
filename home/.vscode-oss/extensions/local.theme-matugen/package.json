@@ -1,0 +1,22 @@
+{
+    "name": "theme-matugen",
+    "displayName": "Matugen",
+    "description": "Local dark theme generated from the current wallpaper",
+    "version": "0.0.1",
+    "publisher": "local",
+    "engines": {
+        "vscode": "^1.80.0"
+    },
+    "categories": [
+        "Themes"
+    ],
+    "contributes": {
+        "themes": [
+            {
+                "label": "Matugen",
+                "uiTheme": "vs-dark",
+                "path": "./themes/matugen.json"
+            }
+        ]
+    }
+}

@@ -1,0 +1,60 @@
+# matugen 4.x configuration, used only by `theme` for the "matugen" theme.
+#
+# Templates live in ~/.config/theme/templates/<path> and render to
+# ~/.config/theme/generated/matugen/<path>; `theme` then installs them into
+# ~/.config/<path> atomically and reloads each app once. That is why there are
+# no post_hooks here: hooks would reload waybar/kitty once per template.
+#
+# Role mapping (Material -> canonical names used by every app):
+#   background <- background            surface           <- surface_container_low
+#   surface_container <- surface_container_high
+#   outline <- outline_variant          warning/success   <- custom colours below
+#   everything else maps 1:1 (on_surface, primary, on_primary, secondary, ...)
+
+[config]
+
+# Fixed hues, blended towards the wallpaper's source colour so they fit it.
+[config.custom_colors]
+warning = { color = "#e0af68", blend = true }
+success = { color = "#9ece6a", blend = true }
+
+[templates.hypr]
+input_path  = "~/.config/theme/templates/hypr/colors.lua"
+output_path = "~/.config/theme/generated/matugen/hypr/colors.lua"
+
+[templates.hyprlock]
+input_path  = "~/.config/theme/templates/hypr/hyprlock-colors.conf"
+output_path = "~/.config/theme/generated/matugen/hypr/hyprlock-colors.conf"
+
+[templates.waybar]
+input_path  = "~/.config/theme/templates/waybar/colors.css"
+output_path = "~/.config/theme/generated/matugen/waybar/colors.css"
+
+[templates.rofi]
+input_path  = "~/.config/theme/templates/rofi/colors.rasi"
+output_path = "~/.config/theme/generated/matugen/rofi/colors.rasi"
+
+[templates.swaync]
+input_path  = "~/.config/theme/templates/swaync/colors.css"
+output_path = "~/.config/theme/generated/matugen/swaync/colors.css"
+
+[templates.kitty]
+input_path  = "~/.config/theme/templates/kitty/colors.conf"
+output_path = "~/.config/theme/generated/matugen/kitty/colors.conf"
+
+[templates.gtk3]
+input_path  = "~/.config/theme/templates/gtk-3.0/colors.css"
+output_path = "~/.config/theme/generated/matugen/gtk-3.0/colors.css"
+
+[templates.gtk4]
+input_path  = "~/.config/theme/templates/gtk-4.0/colors.css"
+output_path = "~/.config/theme/generated/matugen/gtk-4.0/colors.css"
+
+[templates.cava]
+input_path  = "~/.config/theme/templates/cava/themes/current"
+output_path = "~/.config/theme/generated/matugen/cava/themes/current"
+
+# Written straight into the local VSCodium extension (not under ~/.config).
+[templates.vscode]
+input_path  = "~/.config/theme/templates/vscode/matugen.json"
+output_path = "~/.vscode-oss/extensions/local.theme-matugen/themes/matugen.json"

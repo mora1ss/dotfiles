@@ -1,0 +1,17 @@
+/* Generated colour file (theme: rose-pine). Replaced by `theme`.
+ * rofi does not accept "_" in variable names, so roles use "-". */
+* {
+    background:         #191724;
+    surface:            #1f1d2e;
+    surface-container:  #26233a;
+    on-surface:         #e0def4;
+    on-surface-variant: #908caa;
+    outline:            #403d52;
+    primary:            #c4a7e7;
+    on-primary:         #191724;
+    secondary:          #9ccfd8;
+    tertiary:           #ebbcba;
+    error:              #eb6f92;
+    warning:            #f6c177;
+    success:            #31748f;
+}

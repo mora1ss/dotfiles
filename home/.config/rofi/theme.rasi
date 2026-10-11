@@ -1,0 +1,119 @@
+/* Minimal single-column theme shared by every rofi menu
+ * (launcher, clipboard, power, theme and wallpaper pickers).
+ *
+ * The block below is a Rosé Pine fallback; colors.rasi (rewritten by `theme`)
+ * is imported after it and overrides it. rofi needs "-" in variable names. */
+* {
+    background:         #191724;
+    surface:            #1f1d2e;
+    surface-container:  #26233a;
+    on-surface:         #e0def4;
+    on-surface-variant: #908caa;
+    outline:            #403d52;
+    primary:            #c4a7e7;
+    on-primary:         #191724;
+    secondary:          #9ccfd8;
+    error:              #eb6f92;
+}
+
+@import "colors.rasi"
+
+* {
+    font:             "JetBrainsMono Nerd Font 11";
+    background-color: transparent;
+    text-color:       @on-surface;
+    margin:           0;
+    padding:          0;
+    spacing:          0;
+}
+
+window {
+    width:            500px;
+    location:         center;
+    anchor:           center;
+    padding:          8px;
+    background-color: @background;
+    border:           1px;
+    border-color:     @outline;
+    border-radius:    4px;
+}
+
+mainbox {
+    spacing:  8px;
+    children: [ inputbar, message, listview ];
+}
+
+inputbar {
+    padding:          6px 8px;
+    spacing:          8px;
+    background-color: @surface-container;
+    border-radius:    4px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    text-color: @primary;
+}
+
+entry {
+    placeholder:       "search";
+    placeholder-color: @on-surface-variant;
+    cursor:            text;
+}
+
+message {
+    padding:          6px 8px;
+    background-color: @surface;
+    border-radius:    4px;
+}
+
+textbox {
+    text-color: @on-surface-variant;
+}
+
+listview {
+    lines:        10;
+    columns:      1;
+    fixed-height: false;
+    scrollbar:    false;
+    spacing:      2px;
+}
+
+element {
+    padding:       5px 8px;
+    spacing:       8px;
+    border-radius: 4px;
+}
+
+element normal.normal,
+element alternate.normal {
+    text-color: @on-surface;
+}
+
+element normal.active,
+element alternate.active {
+    text-color: @secondary;
+}
+
+element normal.urgent,
+element alternate.urgent {
+    text-color: @error;
+}
+
+element selected.normal,
+element selected.active,
+element selected.urgent {
+    background-color: @surface-container;
+    text-color:       @primary;
+}
+
+element-icon {
+    size:       16px;
+    text-color: inherit;
+}
+
+element-text {
+    text-color:     inherit;
+    highlight:      bold;
+    vertical-align: 0.5;
+}

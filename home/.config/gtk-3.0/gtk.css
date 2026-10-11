@@ -1,0 +1,18 @@
+/* User CSS. colours come from colors.css (rewritten by `theme`).
+ * adw-gtk3-dark supplies the widget layout; this file only overrides
+ * named colours and pulls the main chrome down to a 4px radius.
+ * Radios, pills and circular buttons keep their own shape. */
+@import url("colors.css");
+
+window,
+dialog,
+.popover,
+menu,
+entry,
+textview,
+button:not(.circular):not(.pill),
+notebook > header > tabs > tab,
+headerbar,
+.sidebar {
+    border-radius: 4px;
+}

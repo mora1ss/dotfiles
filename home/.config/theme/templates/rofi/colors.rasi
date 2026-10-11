@@ -1,0 +1,17 @@
+/* Generated colour file (theme: matugen, from {{image}}). Replaced by `theme`.
+ * rofi does not accept "_" in variable names, so roles use "-". */
+* {
+    background:         {{colors.background.default.hex}};
+    surface:            {{colors.surface_container_low.default.hex}};
+    surface-container:  {{colors.surface_container_high.default.hex}};
+    on-surface:         {{colors.on_surface.default.hex}};
+    on-surface-variant: {{colors.on_surface_variant.default.hex}};
+    outline:            {{colors.outline_variant.default.hex}};
+    primary:            {{colors.primary.default.hex}};
+    on-primary:         {{colors.on_primary.default.hex}};
+    secondary:          {{colors.secondary.default.hex}};
+    tertiary:           {{colors.tertiary.default.hex}};
+    error:              {{colors.error.default.hex}};
+    warning:            {{colors.warning.default.hex}};
+    success:            {{colors.success.default.hex}};
+}

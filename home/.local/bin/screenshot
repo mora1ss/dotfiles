@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# screenshot area|full|area-clip
+#   area       select a region, open it in swappy (save/copy from there)
+#   full       save the whole screen to ~/Pictures/Screenshots
+#   area-clip  select a region, copy it to the clipboard
+set -euo pipefail
+
+dir="$HOME/Pictures/Screenshots"
+file="$dir/$(date +%Y%m%d-%H%M%S).png"
+
+case "${1:-}" in
+    area)
+        geom=$(slurp) || exit 0          # Escape in slurp = cancel
+        grim -g "$geom" - | swappy -f -
+        ;;
+    full)
+        mkdir -p "$dir"
+        grim "$file"
+        notify-send -a screenshot -i "$file" "Screenshot saved" "$file"
+        ;;
+    area-clip)
+        geom=$(slurp) || exit 0
+        grim -g "$geom" - | wl-copy --type image/png
+        notify-send -a screenshot "Screenshot copied to clipboard"
+        ;;
+    *)
+        echo "usage: screenshot area|full|area-clip" >&2
+        exit 2
+        ;;
+esac

@@ -1,0 +1,14 @@
+/* Generated colour file (theme: rose-pine). Replaced by `theme`. */
+@define-color background #191724;
+@define-color surface #1f1d2e;
+@define-color surface_container #26233a;
+@define-color on_surface #e0def4;
+@define-color on_surface_variant #908caa;
+@define-color outline #403d52;
+@define-color primary #c4a7e7;
+@define-color on_primary #191724;
+@define-color secondary #9ccfd8;
+@define-color tertiary #ebbcba;
+@define-color error #eb6f92;
+@define-color warning #f6c177;
+@define-color success #31748f;

@@ -1,0 +1,27 @@
+# cava 1.0 — https://github.com/karlstav/cava
+# Colours live in themes/current (rewritten by `theme`).
+# Reload colours with: pkill -USR2 cava
+
+[general]
+framerate = 60
+autosens = 1
+sensitivity = 100
+bars = 0
+bar_width = 2
+bar_spacing = 1
+
+[input]
+method = pulse
+source = auto
+
+[output]
+method = ncurses
+channels = stereo
+mono_option = average
+reverse = 0
+
+[color]
+theme = current
+
+[smoothing]
+noise_reduction = 77

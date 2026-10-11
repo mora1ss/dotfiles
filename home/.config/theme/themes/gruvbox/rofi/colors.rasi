@@ -1,0 +1,17 @@
+/* Generated colour file (theme: gruvbox). Replaced by `theme`.
+ * rofi does not accept "_" in variable names, so roles use "-". */
+* {
+    background:         #282828;
+    surface:            #3c3836;
+    surface-container:  #504945;
+    on-surface:         #ebdbb2;
+    on-surface-variant: #a89984;
+    outline:            #665c54;
+    primary:            #fe8019;
+    on-primary:         #1d2021;
+    secondary:          #8ec07c;
+    tertiary:           #83a598;
+    error:              #fb4934;
+    warning:            #fabd2f;
+    success:            #b8bb26;
+}
