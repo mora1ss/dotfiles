@@ -11,6 +11,7 @@ PACMAN_PKGS=(
     cliphist wl-clipboard grim slurp swappy
     playerctl wireplumber pipewire pipewire-pulse pipewire-alsa
     papirus-icon-theme adw-gtk-theme nwg-look qt6ct kvantum
+    networkmanager xdg-user-dirs
     ttf-jetbrains-mono-nerd inter-font noto-fonts noto-fonts-emoji
     polkit libnotify jq imagemagick
     starship yazi hyprpicker

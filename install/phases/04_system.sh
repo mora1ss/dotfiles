@@ -17,3 +17,7 @@ sudo sed -i 's|^ConfigFile=.*|ConfigFile=Themes/post-apocalyptic_hacker.conf|' "
 
 sudo systemctl enable sddm.service
 ok "sddm enabled for the next boot (not started)"
+
+# A desktop-less install does not start NetworkManager on its own.
+sudo systemctl enable --now NetworkManager.service
+ok "NetworkManager enabled and started"

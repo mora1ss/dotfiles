@@ -1,5 +1,81 @@
 #!/usr/bin/env bash
-# Wallpaper folders and solid placeholders. Real images are left in place.
+# User folders, black Papirus folders, wallpaper placeholders.
+# Real images are left in place.
+
+command -v xdg-user-dirs-update >/dev/null || die "xdg-user-dirs-update is not installed."
+xdg-user-dirs-update
+ok "user directories created"
+
+# Built here, not shipped in the repo: the icons are absolute symlinks into
+# /usr/share/icons/Papirus-Dark, which stow refuses to link.
+papirus_black() {
+    local src=/usr/share/icons/Papirus-Dark
+    local dst=$HOME/.local/share/icons/Papirus-Dark-Black
+    [[ -d $src ]] || die "papirus-icon-theme is not installed ($src missing)."
+    rm -rf "$dst"
+    mkdir -p "$dst"
+    shopt -s nullglob
+    local places=( "$src"/*/places "$src"/*/*/places "$src"/*@2x/places "$src"/*@2x/*/places )
+    local -A seen=()
+    local dirs=() d rel name target current final black
+    local -A chain=()
+    for d in "${places[@]}"; do
+        [[ -d $d && -z ${seen[$d]+x} ]] || continue
+        seen[$d]=1
+        rel=${d#"$src/"}
+        mkdir -p "$dst/$rel"
+        dirs+=("$rel")
+        for link in "$d"/*; do
+            [[ -L $link ]] || continue
+            name=$(basename "$link")
+            current=$name
+            chain=()
+            final=""
+            for _ in 1 2 3 4 5 6 7 8; do
+                [[ -n ${chain[$current]+x} ]] && break
+                chain[$current]=1
+                [[ -L $d/$current ]] || { final=$current; break; }
+                target=$(readlink "$d/$current")
+                [[ $target != /* ]] || { final=$(basename "$target"); break; }
+                current=$(basename "$target")
+                final=$current
+            done
+            black=""
+            case $final in
+                folder-blue.svg) black=folder-black.svg ;;
+                folder-blue-*)   black="folder-black-${final#folder-blue-}" ;;
+                user-blue-*)     black="user-black-${final#user-blue-}" ;;
+            esac
+            [[ -n $black && -e $d/$black ]] || continue
+            ln -s "$d/$black" "$dst/$rel/$name"
+        done
+    done
+    {
+        echo "[Icon Theme]"
+        echo "Name=Papirus Dark (black folders)"
+        echo "Comment=Papirus-Dark with the black folder colour"
+        echo "Inherits=Papirus-Dark"
+        echo "Example=folder"
+        local IFS=,
+        echo "Directories=${dirs[*]}"
+        echo
+        for rel in "${dirs[@]}"; do
+            local size=${rel%%x*}
+            size=${size%%@*}
+            echo "[$rel]"
+            echo "Context=Places"
+            echo "Size=$size"
+            echo "Type=Fixed"
+            [[ $rel == *@2x* ]] && echo "Scale=2"
+            echo
+        done
+    } > "$dst/index.theme"
+    gtk-update-icon-cache -f -t "$dst" >/dev/null
+    shopt -u nullglob
+    ok "Papirus-Dark-Black generated"
+}
+
+papirus_black
 
 walls=$HOME/Pictures/Wallpapers
 state=${XDG_STATE_HOME:-$HOME/.local/state}/theme
